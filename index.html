@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PromptHub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F5F0;--surface:#fff;--border:#E4E0D8;--text:#1A1814;--muted:#7A7670;
+  --ai:#2D6A4F;--ai-bg:#EAF4EF;--code:#1A3A5C;--code-bg:#EAF0F6;
+  --study:#6B3FA0;--study-bg:#F3EEFA;--write:#C0392B;--write-bg:#FDEDEC;
+  --locked:#B85C00;--locked-bg:#FFF3E8;
+  --yellow:#FFF176;--yb:#F9C922;
+  --gold:#F9C922;--silver:#B0BEC5;--bronze:#A0785A;
+}
+[data-theme="dark"]{
+  --bg:#0F0F0F;--surface:#1A1A1A;--border:#2A2A2A;--text:#EEEAE4;--muted:#7A7670;
+  --ai:#4CAF82;--ai-bg:#0D2B1F;--code:#5B8DC9;--code-bg:#0D1E30;
+  --study:#9B72D0;--study-bg:#1E0F35;--write:#E57373;--write-bg:#2B0D0D;
+  --locked:#E08C40;--locked-bg:#2B1500;
+  --yellow:#3D3300;--yb:#F9C922;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;transition:background .3s,color .3s}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:rgba(247,245,240,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;transition:background .3s,border-color .3s}
+[data-theme="dark"] header{background:rgba(15,15,15,.95)}
+.logo{font-family:'DM Serif Display',serif;font-size:1.35rem;color:var(--text);text-decoration:none;letter-spacing:-.02em;flex-shrink:0}
+.logo span{color:var(--ai)}
+.header-right{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+.hbtn{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:500;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.hbtn:hover{border-color:#aaa}
+.hbtn svg{width:14px;height:14px;flex-shrink:0}
+.bm-count{background:var(--text);color:var(--bg);border-radius:999px;padding:1px 7px;font-size:.72rem;font-family:'DM Mono',monospace;min-width:18px;text-align:center}
+.dark-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s}
+.dark-toggle:hover{border-color:#aaa}
+
+/* HERO */
+.hero{padding:3.5rem 2rem 1rem;max-width:680px;margin:0 auto;text-align:center}
+.eyebrow{font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,4.5vw,3rem);line-height:1.15;letter-spacing:-.03em;margin-bottom:.75rem}
+.hero h1 em{font-style:italic;color:var(--ai)}
+.hero p{color:var(--muted);font-size:.95rem;font-weight:300;max-width:440px;margin:0 auto}
+.hero-stats{display:flex;justify-content:center;gap:2rem;margin-top:1.5rem}
+.stat{text-align:center}
+.stat-num{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--ai);display:block}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* TABS */
+.tabs{display:flex;max-width:1100px;margin:1.5rem auto 0;padding:0 2rem;gap:.5rem;border-bottom:2px solid var(--border)}
+.tab{padding:.6rem 1.2rem;font-size:.875rem;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+/* SEARCH */
+.search-section{max-width:680px;margin:1.5rem auto 0;padding:0 2rem}
+.search-bar{width:100%;display:flex;align-items:center;background:var(--surface);border:2px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .3s,box-shadow .3s,background .3s}
+.search-bar.focused{border-color:var(--yb);background:var(--yellow);box-shadow:0 0 0 5px rgba(249,201,34,.15)}
+[data-theme="dark"] .search-bar.focused{background:#2A2500}
+.si-wrap{padding:0 14px;color:var(--muted);display:flex;align-items:center}
+.si-wrap svg{width:16px;height:16px}
+#search-input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.95rem;padding:13px 0;background:transparent;color:var(--text)}
+#search-input::placeholder{color:var(--muted)}
+.s-hint{font-family:'DM Mono',monospace;font-size:.62rem;padding:0 12px;color:var(--muted);white-space:nowrap}
+.search-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.65rem}
+.stag{font-size:.72rem;font-family:'DM Mono',monospace;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:3px 11px;cursor:pointer;color:var(--muted);transition:all .18s}
+.stag:hover{border-color:var(--text);color:var(--text)}
+.stag.active{background:var(--text);border-color:var(--text);color:var(--bg)}
+.s-count{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);margin-top:.5rem;min-height:1.2em}
+
+/* FILTERS */
+.filters{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;max-width:900px;margin:1.5rem auto 0;padding:0 2rem}
+.pill{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;color:var(--muted)}
+.pill:hover{border-color:#aaa;color:var(--text)}
+.pill.active{background:var(--text);border-color:var(--text);color:var(--bg)}
+.pill .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pill[data-cat="all"]   .dot{background:var(--text)}
+.pill[data-cat="ai"]    .dot{background:var(--ai)}
+.pill[data-cat="coding"].dot{background:var(--code)}
+.pill[data-cat="study"] .dot{background:var(--study)}
+.pill[data-cat="write"] .dot{background:var(--write)}
+.pill.active .dot{background:var(--bg)!important}
+
+/* GRID */
+.grid-wrap{max-width:1100px;margin:1.5rem auto 0;padding:0 2rem 5rem}
+.sec-label{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;padding-bottom:.65rem;border-bottom:1px solid var(--border)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.no-results{padding:4rem 2rem;text-align:center;color:var(--muted);background:var(--surface);border-radius:12px}
+
+/* CARD */
+.card{background:var(--surface);padding:1.4rem;display:flex;flex-direction:column;gap:.85rem;transition:background .2s;animation:fadeIn .3s ease both}
+.card:hover{background:var(--bg)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;font-weight:500;flex-shrink:0}
+.tag-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.tag.ai{background:var(--ai-bg);color:var(--ai)} .tag.ai .tag-dot{background:var(--ai)}
+.tag.coding{background:var(--code-bg);color:var(--code)} .tag.coding .tag-dot{background:var(--code)}
+.tag.study{background:var(--study-bg);color:var(--study)} .tag.study .tag-dot{background:var(--study)}
+.tag.write{background:var(--write-bg);color:var(--write)} .tag.write .tag-dot{background:var(--write)}
+.tag.locked-tag{background:var(--locked-bg);color:var(--locked)} .tag.locked-tag .tag-dot{background:var(--locked)}
+.unlocked-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:.65rem;background:var(--ai-bg);color:var(--ai);border-radius:4px;padding:2px 7px;font-weight:500}
+.user-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:.65rem;background:var(--study-bg);color:var(--study);border-radius:4px;padding:2px 7px;font-weight:500}
+.card-actions{display:flex;gap:.4rem}
+.bm-icon,.vote-btn{height:28px;border:1.5px solid var(--border);border-radius:6px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--muted);gap:4px;font-size:.72rem;font-family:'DM Mono',monospace;padding:0 8px}
+.bm-icon{width:28px;padding:0}
+.bm-icon:hover,.vote-btn:hover{border-color:var(--text);color:var(--text)}
+.bm-icon.saved{border-color:var(--text);background:var(--text);color:var(--bg)}
+.bm-icon svg,.vote-btn svg{width:12px;height:12px}
+.vote-btn.voted{border-color:var(--ai);background:var(--ai-bg);color:var(--ai)}
+.card h3{font-family:'DM Serif Display',serif;font-size:1rem;line-height:1.3;letter-spacing:-.01em}
+.card>p{font-size:.84rem;color:var(--muted);font-weight:300;line-height:1.6;flex:1}
+.prompt-preview{font-family:'DM Mono',monospace;font-size:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.65rem .9rem;color:var(--text);line-height:1.7;word-break:break-word}
+.blank{display:inline-block;background:var(--surface);border:1.5px dashed var(--border);border-radius:3px;padding:0 5px;color:var(--muted);font-style:italic;font-size:.7rem}
+.fill-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:8px 14px;border-radius:7px;border:1.5px solid var(--text);background:var(--text);color:var(--bg);font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.fill-btn:hover{opacity:.85}
+.fill-btn svg{width:12px;height:12px}
+.diff{font-size:.72rem;font-family:'DM Mono',monospace;color:var(--muted);display:flex;align-items:center;gap:5px}
+.diff-dots{display:flex;gap:3px}
+.diff-dot{width:5px;height:5px;border-radius:50%;background:var(--border)}
+.diff-dot.on{background:var(--muted)}
+/* LOCKED */
+.card.locked{background:var(--locked-bg)}
+.card.locked:hover{background:var(--locked-bg);filter:brightness(.97)}
+.locked-overlay{border:2px dashed #F0C090;border-radius:8px;padding:.85rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;text-align:center;min-height:80px;justify-content:center}
+.lock-icon{font-size:1.4rem}
+.locked-overlay p{font-size:.78rem;color:var(--locked);font-weight:500}
+.locked-overlay small{font-size:.7rem;color:var(--muted)}
+.quiz-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:8px 14px;border-radius:7px;border:2px solid var(--locked);background:var(--locked-bg);color:var(--locked);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.quiz-btn:hover{background:var(--locked);color:#fff}
+.quiz-btn svg{width:12px;height:12px}
+
+/* LEADERBOARD TAB */
+/* UNIQUE BACK BUTTON */
+.back-btn{display:inline-flex;align-items:center;gap:8px;margin:1.5rem 0 0 0;padding:10px 20px;border-radius:999px;border:2px solid var(--border);background:var(--surface);color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .25s;letter-spacing:.04em;text-transform:uppercase}
+.back-btn:hover{border-color:var(--text);color:var(--text);background:var(--bg);transform:translateX(-4px)}
+.back-btn .back-arrow{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--border);transition:all .25s;font-size:.8rem}
+.back-btn:hover .back-arrow{background:var(--text);color:var(--bg)}
+.lb-wrap{max-width:700px;margin:0 auto;padding:0 2rem 5rem}
+.lb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.lb-title{font-family:'DM Serif Display',serif;font-size:1.4rem}
+.lb-sub{font-size:.82rem;color:var(--muted);margin-top:.2rem}
+.lb-list{display:flex;flex-direction:column;gap:.75rem}
+.lb-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:all .2s;animation:fadeIn .3s ease both}
+.lb-card:hover{border-color:#aaa;transform:translateX(3px)}
+.lb-rank{font-family:'DM Serif Display',serif;font-size:1.6rem;min-width:40px;text-align:center}
+.lb-rank.r1{color:var(--gold)}
+.lb-rank.r2{color:var(--silver)}
+.lb-rank.r3{color:var(--bronze)}
+.lb-rank.rn{color:var(--muted);font-size:1.1rem}
+.lb-info{flex:1}
+.lb-name{font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:.2rem}
+.lb-meta{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:.75rem}
+.lb-cat{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:.65rem;padding:2px 7px;border-radius:3px}
+.lb-votes{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:var(--ai)}
+.lb-vote-btn{display:flex;align-items:center;gap:5px;font-size:.78rem;font-family:'DM Mono',monospace;padding:5px 12px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;color:var(--muted);transition:all .2s;font-weight:500}
+.lb-vote-btn:hover{border-color:var(--ai);color:var(--ai)}
+.lb-vote-btn.voted{border-color:var(--ai);background:var(--ai-bg);color:var(--ai)}
+.medal{font-size:1.2rem}
+
+/* SUBMIT TAB */
+.submit-wrap{max-width:600px;margin:0 auto;padding:0 2rem 5rem}
+.submit-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem}
+.submit-title{font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:.4rem}
+.submit-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.75rem;line-height:1.5}
+.sfield{margin-bottom:1.1rem}
+.sfield label{display:block;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.sfield input,.sfield select,.sfield textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.9rem;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s}
+.sfield input:focus,.sfield select:focus,.sfield textarea:focus{border-color:var(--text);background:var(--surface)}
+.sfield select{appearance:none;cursor:pointer}
+.sfield textarea{resize:vertical;min-height:100px}
+.char-hint{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);margin-top:.25rem;text-align:right}
+.submit-tip{background:var(--yellow);border:1.5px solid var(--yb);border-radius:8px;padding:.75rem 1rem;font-size:.8rem;color:#8B6914;margin-bottom:1.25rem;display:flex;gap:.5rem}
+[data-theme="dark"] .submit-tip{color:#F9C922}
+.submit-btn{width:100%;padding:12px;border-radius:8px;border:none;background:var(--text);color:var(--bg);font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.submit-btn:hover{opacity:.85}
+.submit-success{text-align:center;padding:2rem;display:none}
+.submit-success.show{display:block}
+.submit-success .ss-icon{font-size:3rem;margin-bottom:1rem}
+.submit-success h3{font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:.5rem}
+.submit-success p{font-size:.875rem;color:var(--muted)}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(26,24,20,.35);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.open{opacity:1;pointer-events:all}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);background:var(--surface);border-left:1px solid var(--border);z-index:201;transform:translateX(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+.panel.open{transform:translateX(0)}
+.panel-head{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.panel-title{font-family:'DM Serif Display',serif;font-size:1.15rem}
+.close-btn{background:none;border:1px solid var(--border);border-radius:6px;width:30px;height:30px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.close-btn:hover{border-color:var(--text);color:var(--text)}
+.panel-body{flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.85rem}
+.empty{text-align:center;color:var(--muted);padding:2.5rem 1rem;font-size:.875rem}
+.empty-icon{font-size:2rem;margin-bottom:.6rem}
+.saved-card{border:1px solid var(--border);border-radius:8px;padding:.9rem;display:flex;flex-direction:column;gap:.4rem}
+.saved-card h4{font-family:'DM Serif Display',serif;font-size:.9rem}
+.saved-card p{font-size:.78rem;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.5}
+
+/* FILL MODAL */
+.modal-wrap{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-wrap.open{opacity:1;pointer-events:all}
+.modal-bg{position:absolute;inset:0;background:rgba(26,24,20,.5);backdrop-filter:blur(4px)}
+.modal{position:relative;background:var(--surface);border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.2);animation:modalIn .25s ease}
+.modal-header{padding:1.25rem 1.25rem 0;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.modal-header h2{font-family:'DM Serif Display',serif;font-size:1.2rem;line-height:1.2}
+.modal-close{background:none;border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:var(--text);color:var(--text)}
+.modal-body{padding:1.1rem 1.25rem}
+.modal-hint{font-size:.8rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.field{margin-bottom:.9rem}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+.field input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 11px;font-size:.88rem;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--text);background:var(--surface)}
+.prev-lbl{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.prev-box{font-family:'DM Mono',monospace;font-size:.78rem;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:.8rem .9rem;color:var(--text);line-height:1.7;min-height:55px;word-break:break-word;margin-bottom:1rem}
+.prev-box .filled{color:var(--ai);font-weight:500}
+.prev-box .unfilled{color:var(--border)}
+.modal-actions{display:flex;gap:.65rem}
+.btn-copy{flex:1;padding:9px 14px;border-radius:7px;border:none;background:var(--text);color:var(--bg);font-size:.88rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-copy:hover{opacity:.85}
+.btn-copy.done{background:var(--ai)}
+.btn-cancel{padding:9px 14px;border-radius:7px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.88rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-cancel:hover{border-color:#aaa;color:var(--text)}
+
+/* QUIZ MODAL */
+.quiz-wrap{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .25s}
+.quiz-wrap.open{opacity:1;pointer-events:all}
+.quiz-bg{position:absolute;inset:0;background:rgba(26,24,20,.6);backdrop-filter:blur(6px)}
+.quiz-box{position:relative;background:var(--surface);border-radius:16px;width:100%;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden;animation:modalIn .25s ease}
+.quiz-top{background:linear-gradient(135deg,#FFF9C4,#FFF176);padding:1.1rem 1.25rem;border-bottom:2px solid #F9C922}
+[data-theme="dark"] .quiz-top{background:linear-gradient(135deg,#2A2500,#3D3300)}
+.quiz-top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
+.quiz-badge{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#8B6914;background:rgba(249,201,34,.3);padding:2px 9px;border-radius:999px;font-weight:600}
+.quiz-prog{font-family:'DM Mono',monospace;font-size:.7rem;color:#8B6914;font-weight:600}
+.quiz-ctitle{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text)}
+.quiz-body{padding:1.25rem}
+.quiz-q{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:1rem;line-height:1.5}
+.quiz-opts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.1rem}
+.quiz-opt{padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.87rem;text-align:left;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;transition:all .18s}
+.quiz-opt:hover:not(:disabled){border-color:var(--text);background:var(--surface);transform:translateX(3px)}
+.quiz-opt.correct{border-color:var(--ai);background:var(--ai-bg);color:var(--ai);font-weight:600}
+.quiz-opt.wrong{border-color:#C0392B;background:#FDEDEC;color:#C0392B}
+.quiz-opt:disabled{cursor:not-allowed;transform:none}
+.quiz-fb{font-size:.83rem;font-weight:500;padding:.5rem .8rem;border-radius:6px;margin-bottom:.85rem;display:none}
+.quiz-fb.show{display:block}
+.quiz-fb.ok{background:var(--ai-bg);color:var(--ai)}
+.quiz-fb.bad{background:#FDEDEC;color:#C0392B}
+.quiz-next{width:100%;padding:10px;border-radius:8px;border:none;background:var(--text);color:var(--bg);font-size:.88rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:none}
+.quiz-next:hover{opacity:.85}
+.quiz-next.show{display:block}
+.quiz-skip{width:100%;padding:7px;border-radius:8px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:.4rem;transition:all .2s}
+.quiz-skip:hover{color:var(--text);border-color:var(--text)}
+.quiz-win{display:none;flex-direction:column;align-items:center;padding:2rem;text-align:center;gap:.85rem}
+.quiz-win.show{display:flex}
+.win-emoji{font-size:3rem;animation:pop .4s ease}
+.win-title{font-family:'DM Serif Display',serif;font-size:1.5rem}
+.win-sub{font-size:.875rem;color:var(--muted)}
+.win-btn{padding:11px 28px;border-radius:8px;border:none;background:var(--ai);color:#fff;font-size:.92rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.win-btn:hover{opacity:.88}
+
+/* SURPRISE */
+.surprise-wrap{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(26,24,20,.65);backdrop-filter:blur(8px);animation:fadeIn .4s ease}
+.surprise-wrap.gone{display:none}
+.surprise-box{background:var(--surface);border-radius:20px;max-width:380px;width:100%;padding:2.25rem 1.75rem;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.25);animation:surpriseIn .5s cubic-bezier(.34,1.56,.64,1)}
+.surprise-emoji{font-size:3rem;margin-bottom:.85rem;display:block;animation:wave 1s ease infinite alternate}
+.surprise-title{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:.5rem;letter-spacing:-.02em}
+.surprise-title em{color:var(--ai);font-style:italic}
+.surprise-sub{font-size:.875rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6}
+.surprise-tip{background:var(--yellow);border:1.5px solid var(--yb);border-radius:9px;padding:.7rem .9rem;font-size:.8rem;color:#8B6914;margin-bottom:1.25rem;text-align:left;display:flex;gap:.5rem}
+[data-theme="dark"] .surprise-tip{color:#F9C922}
+.surprise-btn{width:100%;padding:12px;border-radius:10px;border:none;background:var(--text);color:var(--bg);font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.surprise-btn:hover{opacity:.85}
+.confetti-piece{position:fixed;pointer-events:none;z-index:999;border-radius:2px;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+footer{border-top:1px solid var(--border);text-align:center;padding:1.75rem;font-size:.78rem;color:var(--muted);font-family:'DM Mono',monospace}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes surpriseIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes wave{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+
+/* ── RESPONSIVE ── */
+
+/* Tablet: 768px and below */
+@media(max-width:768px){
+  /* Header */
+  header{padding:0 1rem;height:56px}
+  .logo{font-size:1.15rem}
+  .hbtn span:not(.bm-count){display:none} /* hide text labels, keep icons */
+  .hbtn{padding:6px 9px;gap:0}
+  .hbtn svg{width:16px;height:16px}
+  .dark-toggle{width:32px;height:32px;font-size:.9rem}
+  .header-right{gap:.4rem}
+
+  /* Hero */
+  .hero{padding:2.5rem 1.25rem .75rem}
+  .hero h1{font-size:clamp(1.6rem,7vw,2.4rem)}
+  .hero p{font-size:.88rem}
+  .hero-stats{gap:1.25rem}
+  .stat-num{font-size:1.3rem}
+
+  /* Search */
+  .search-section{padding:0 1rem;margin-top:1.25rem}
+  .s-hint{display:none}
+  #search-input{font-size:.9rem;padding:12px 0}
+
+  /* Filters */
+  .filters{padding:0 1rem;gap:.35rem;margin-top:1.25rem;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:.4rem}
+  .filters::-webkit-scrollbar{display:none}
+  .pill{flex-shrink:0;padding:6px 13px;font-size:.78rem}
+
+  /* Grid */
+  .grid-wrap{padding:0 1rem 4rem;margin-top:1.25rem}
+  .grid{grid-template-columns:1fr 1fr}
+
+  /* Cards */
+  .card{padding:1.1rem}
+  .card h3{font-size:.95rem}
+  .card>p{font-size:.8rem}
+  .prompt-preview{font-size:.72rem;padding:.6rem .8rem}
+  .fill-btn,.quiz-btn{font-size:.78rem;padding:8px 12px}
+
+  /* Leaderboard */
+  .lb-wrap{padding:0 1rem 4rem}
+  .lb-card{padding:.85rem 1rem;gap:.75rem}
+  .lb-rank{font-size:1.2rem;min-width:32px}
+  .lb-name{font-size:.88rem}
+  .lb-votes{font-size:.78rem}
+  .lb-vote-btn{padding:4px 10px;font-size:.72rem}
+
+  /* Submit */
+  .submit-wrap{padding:0 1rem 4rem}
+  .submit-card{padding:1.25rem}
+  .submit-title{font-size:1.2rem}
+
+  /* Modals */
+  .modal{border-radius:12px 12px 0 0;max-height:95vh;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%}
+  .modal-wrap{align-items:flex-end;padding:0}
+  .quiz-box{border-radius:16px}
+  .quiz-wrap{padding:.75rem}
+
+  /* Panel */
+  .panel{width:100vw}
+
+  /* Surprise */
+  .surprise-box{padding:1.75rem 1.25rem;border-radius:16px}
+  .surprise-title{font-size:1.4rem}
+
+  /* Back button */
+  .back-btn{font-size:.72rem;padding:8px 16px}
+}
+
+/* Mobile: 480px and below */
+@media(max-width:480px){
+  /* Header: show hamburger menu icon only for nav buttons */
+  header{height:52px}
+  .logo{font-size:1.05rem}
+
+  /* Hero */
+  .hero{padding:2rem 1rem .6rem}
+  .hero h1{font-size:clamp(1.45rem,8vw,2rem);letter-spacing:-.025em}
+  .hero-stats{gap:.9rem}
+  .stat-num{font-size:1.15rem}
+  .stat-lbl{font-size:.6rem}
+
+  /* Grid: single column on small phones */
+  .grid{grid-template-columns:1fr}
+
+  /* Search tags: scrollable row */
+  .search-tags{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:.3rem}
+  .search-tags::-webkit-scrollbar{display:none}
+  .stag{flex-shrink:0}
+
+  /* Cards: slightly more compact */
+  .card{padding:1rem}
+  .card h3{font-size:.92rem}
+  .vote-btn{padding:0 7px}
+
+  /* Leaderboard compact */
+  .lb-card{flex-wrap:wrap;gap:.5rem}
+  .lb-info{min-width:0;flex:1}
+  .lb-meta{flex-wrap:wrap;gap:.4rem}
+
+  /* Submit form */
+  .submit-card{padding:1rem}
+  .sfield input,.sfield select,.sfield textarea{font-size:.88rem;padding:9px 10px}
+
+  /* Modal slides up from bottom */
+  .modal-header{padding:1rem 1rem 0}
+  .modal-body{padding:.9rem 1rem}
+  .modal-actions{flex-direction:column}
+  .btn-cancel{order:2}
+  .btn-copy{order:1}
+
+  /* Quiz */
+  .quiz-opts{gap:.4rem}
+  .quiz-opt{padding:9px 12px;font-size:.84rem}
+  .quiz-body{padding:1rem}
+
+  /* Panel */
+  .panel-head{padding:1rem 1.25rem}
+  .panel-body{padding:1rem}
+
+  /* Footer */
+  footer{padding:1.25rem;font-size:.72rem}
+}
+
+/* Large screens: 1200px+ */
+@media(min-width:1200px){
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .hero{padding:4.5rem 2rem 1.25rem}
+}
+
+/* Touch devices: remove hover effects that feel weird on touch */
+@media(hover:none){
+  .card:hover{background:var(--surface)}
+  .quiz-opt:hover:not(:disabled){transform:none}
+  .lb-card:hover{transform:none}
+  .back-btn:hover{transform:none}
+  .back-btn:hover .back-arrow{background:var(--border);color:inherit}
+}
+</style>
+</head>
+<body>
+
+<!-- SURPRISE -->
+<div class="surprise-wrap" id="surprise">
+  <div class="surprise-box">
+    <span class="surprise-emoji">&#127775;</span>
+    <div class="surprise-title">Welcome to <em>PromptHub</em></div>
+    <p class="surprise-sub">Your community library of AI, coding, study and writing prompts. Fill in blanks, copy instantly, and vote for your favourites!</p>
+    <div class="surprise-tip"><span>&#128274;</span><span>Some prompts are <strong>locked</strong> &mdash; answer 2 easy questions to unlock them. Super fun!</span></div>
+    <button class="surprise-btn" onclick="closeSurprise()">Let me explore! &#127919;</button>
+  </div>
+</div>
+
+<header>
+  <a class="logo" href="#">Prompt<span>Hub</span></a>
+  <div class="header-right">
+    <button class="hbtn" onclick="switchTab('leaderboard')" title="Leaderboard">&#127942; <span>Leaderboard</span></button>
+    <button class="hbtn" onclick="switchTab('submit')" title="Submit a prompt">&#43; <span>Submit</span></button>
+    <button class="hbtn" onclick="togglePanel()" title="Saved prompts">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <span>Saved</span> <span class="bm-count" id="bm-count">0</span>
+    </button>
+    <button class="dark-toggle" onclick="toggleDark()" id="dark-btn" title="Toggle dark mode">&#127763;</button>
+  </div>
+</header>
+
+<!-- TAB: BROWSE -->
+<div id="tab-browse">
+  <section class="hero">
+    <p class="eyebrow">Community Prompt Library</p>
+    <h1>Prompts that <em>spark</em><br>better thinking</h1>
+    <p>Fill in the blanks, copy instantly. Vote for your favourites to push them up the leaderboard!</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num" id="stat-total">38</span><span class="stat-lbl">Prompts</span></div>
+      <div class="stat"><span class="stat-num" id="stat-votes">0</span><span class="stat-lbl">Total Votes</span></div>
+      <div class="stat"><span class="stat-num" id="stat-users">0</span><span class="stat-lbl">Submitted</span></div>
+    </div>
+  </section>
+  <div class="search-section">
+    <div class="search-bar" id="search-bar">
+      <div class="si-wrap"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <input type="text" id="search-input" placeholder="Search prompts... try 'debug' or 'study'" oninput="onSearch()" onkeydown="searchKey(event)" onfocus="sFocus(true)" onblur="sFocus(false)"/>
+      <span class="s-hint">Press / to search</span>
+    </div>
+    <div class="search-tags">
+      <span class="stag" onclick="tagSearch('beginner',this)">Beginner</span>
+      <span class="stag" onclick="tagSearch('intermediate',this)">Intermediate</span>
+      <span class="stag" onclick="tagSearch('advanced',this)">Advanced</span>
+      <span class="stag" onclick="tagSearch('debug',this)">Debug</span>
+      <span class="stag" onclick="tagSearch('locked',this)">&#128274; Locked</span>
+      <span class="stag" onclick="tagSearch('top',this)">&#128293; Top Voted</span>
+    </div>
+    <div class="s-count" id="s-count"></div>
+  </div>
+  <div class="filters">
+    <button class="pill active" data-cat="all"    onclick="doFilter('all',this)">   <span class="dot"></span>All</button>
+    <button class="pill"        data-cat="ai"     onclick="doFilter('ai',this)">    <span class="dot"></span>AI Prompts</button>
+    <button class="pill"        data-cat="coding" onclick="doFilter('coding',this)"><span class="dot"></span>Coding</button>
+    <button class="pill"        data-cat="study"  onclick="doFilter('study',this)"> <span class="dot"></span>Study</button>
+    <button class="pill"        data-cat="write"  onclick="doFilter('write',this)"> <span class="dot"></span>Writing</button>
+  </div>
+  <div class="grid-wrap">
+    <p class="sec-label" id="sec-label">All prompts</p>
+    <div id="grid"></div>
+  </div>
+</div>
+
+<!-- TAB: LEADERBOARD -->
+<div id="tab-leaderboard" style="display:none">
+  <div class="lb-wrap">
+    <button class="back-btn" onclick="switchTab('browse')"><span class="back-arrow">&#8592;</span> Back to prompts</button>
+    <div class="lb-header" style="margin-top:1.25rem">
+      <div><div class="lb-title">&#127942; Leaderboard</div><div class="lb-sub">Top voted prompts from the community. Vote to push your favourite up!</div></div>
+    </div>
+    <div class="lb-list" id="lb-list"></div>
+  </div>
+</div>
+
+<!-- TAB: SUBMIT -->
+<div id="tab-submit" style="display:none">
+  <div class="submit-wrap">
+    <button class="back-btn" onclick="switchTab('browse')"><span class="back-arrow">&#8592;</span> Back to prompts</button>
+    <div class="submit-card" style="margin-top:1.25rem">
+      <div id="submit-form-wrap">
+        <div class="submit-title">&#9997;&#65039; Submit a Prompt</div>
+        <p class="submit-sub">Write a useful prompt for students or coders. Use <strong>[brackets]</strong> for parts the user should fill in. The best prompts get voted to the top of the leaderboard!</p>
+        <div class="submit-tip"><span>&#128161;</span><span>Tip: Use [brackets] like [your topic] or [paste code here] so users can personalise it.</span></div>
+        <div class="sfield"><label>Your name (or nickname)</label><input type="text" id="sub-name" placeholder="e.g. Alex or @coder123" maxlength="30"/></div>
+        <div class="sfield"><label>Prompt title</label><input type="text" id="sub-title" placeholder="e.g. Explain Like I am 5" maxlength="50"/></div>
+        <div class="sfield"><label>Category</label>
+          <select id="sub-cat">
+            <option value="ai">AI Prompts</option>
+            <option value="coding">Coding</option>
+            <option value="study">Study</option>
+            <option value="write">Writing</option>
+          </select>
+        </div>
+        <div class="sfield"><label>Difficulty</label>
+          <select id="sub-diff">
+            <option value="1">Beginner</option>
+            <option value="2">Intermediate</option>
+            <option value="3">Advanced</option>
+          </select>
+        </div>
+        <div class="sfield"><label>Short description</label><input type="text" id="sub-desc" placeholder="What does this prompt help with?" maxlength="100"/></div>
+        <div class="sfield"><label>The prompt (use [brackets] for blanks)</label><textarea id="sub-prompt" placeholder="e.g. Explain [concept] in simple terms with a real-world example." maxlength="400" oninput="updateCharCount()"></textarea><div class="char-hint"><span id="char-count">0</span>/400</div></div>
+        <button class="submit-btn" onclick="submitPrompt()">Submit prompt &#127919;</button>
+      </div>
+      <div class="submit-success" id="submit-success">
+        <div class="ss-icon">&#127881;</div>
+        <h3>Prompt Submitted!</h3>
+        <p>Your prompt is now live in the library. Share it with friends and get votes to reach the top of the leaderboard!</p>
+        <br/>
+        <button class="submit-btn" style="max-width:220px;margin:0 auto;display:block" onclick="submitAnother()">Submit another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKMARK PANEL -->
+<div class="overlay" id="overlay" onclick="togglePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-head"><span class="panel-title">Saved Prompts</span>
+    <button class="close-btn" onclick="togglePanel()"><svg width="13" height="13" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- FILL MODAL -->
+<div class="modal-wrap" id="modal-wrap">
+  <div class="modal-bg" onclick="closeModal()"></div>
+  <div class="modal">
+    <div class="modal-header"><h2 id="modal-title">Fill in the blanks</h2>
+      <button class="modal-close" onclick="closeModal()"><svg width="13" height="13" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-hint">Fill in each field. Your completed prompt updates live.</p>
+      <div id="modal-fields"></div>
+      <p class="prev-lbl">Completed prompt</p>
+      <div class="prev-box" id="modal-preview"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-copy" id="modal-copy-btn" onclick="modalCopy()">Copy prompt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ MODAL -->
+<div class="quiz-wrap" id="quiz-wrap">
+  <div class="quiz-bg" onclick="closeQuiz()"></div>
+  <div class="quiz-box">
+    <div id="quiz-game">
+      <div class="quiz-top">
+        <div class="quiz-top-row"><span class="quiz-badge">&#127919; Quick Quiz</span><span class="quiz-prog" id="quiz-prog">1 / 2</span></div>
+        <div class="quiz-ctitle" id="quiz-ctitle">Unlock this prompt</div>
+      </div>
+      <div class="quiz-body">
+        <div class="quiz-q" id="quiz-q"></div>
+        <div class="quiz-opts" id="quiz-opts"></div>
+        <div class="quiz-fb" id="quiz-fb"></div>
+        <button class="quiz-next" id="quiz-next" onclick="nextQ()">Next &rarr;</button>
+        <button class="quiz-skip" onclick="closeQuiz()">Skip for now</button>
+      </div>
+    </div>
+    <div class="quiz-win" id="quiz-win">
+      <div class="win-emoji">&#127881;</div>
+      <div class="win-title">Unlocked!</div>
+      <div class="win-sub" id="win-sub">Great job! The prompt is now yours.</div>
+      <button class="win-btn" onclick="onWin()">Use this prompt &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<footer>prompthub &middot; made for curious minds &middot; <span id="footer-count">38</span> prompts and counting</footer>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mnav-btn active" id="mnav-browse" onclick="mnavSwitch('browse')">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>Browse</span>
+  </button>
+  <button class="mnav-btn" id="mnav-leaderboard" onclick="mnavSwitch('leaderboard')">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Top</span>
+  </button>
+  <button class="mnav-btn" id="mnav-submit" onclick="mnavSwitch('submit')">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>Submit</span>
+  </button>
+  <button class="mnav-btn" id="mnav-saved" onclick="togglePanel()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span>Saved</span>
+  </button>
+</nav>
+
+<style>
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--surface);border-top:1px solid var(--border);padding:.4rem 0 env(safe-area-inset-bottom,.4rem);backdrop-filter:blur(10px)}
+.mobile-nav .mnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:.4rem .5rem;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.62rem;font-family:'DM Mono',monospace;letter-spacing:.04em;text-transform:uppercase;transition:color .2s}
+.mobile-nav .mnav-btn.active{color:var(--text)}
+.mobile-nav .mnav-btn svg{width:20px;height:20px;stroke:currentColor}
+.mobile-nav{display:flex}
+@media(min-width:769px){.mobile-nav{display:none}}
+/* Add bottom padding on mobile so content doesn't hide behind nav */
+@media(max-width:768px){
+  body{padding-bottom:65px}
+  footer{padding-bottom:calc(1.75rem + 65px)}
+}
+</style>
+
+<script>
+var BASE = [
+  // AI
+  {id:1,  cat:"ai",    diff:1, locked:false, votes:24, by:"PromptHub", title:"Explain Like I am 5",        desc:"Simplify any concept into a child-friendly explanation.",    prompt:"Explain [concept] as if I were a 5-year-old. Use simple words, a fun analogy, and one short example."},
+  {id:2,  cat:"ai",    diff:2, locked:false, votes:18, by:"PromptHub", title:"Devils Advocate",             desc:"Challenge your ideas by arguing the opposite perspective.",   prompt:"I believe [your opinion]. Play devil's advocate and give me the 3 strongest counter-arguments."},
+  {id:3,  cat:"ai",    diff:2, locked:true,  votes:31, by:"PromptHub", title:"Socratic Tutor",              desc:"Get guided to an answer through questions, not explanations.",prompt:"I want to understand [topic]. Do not explain it - just ask me questions that guide me to figure it out myself, one at a time.",
+    quiz:[{q:"What is a tutor?",opts:["Someone who cooks","Someone who helps you learn","A bus driver","A builder"],ans:1},{q:"Best way to truly learn something?",opts:["Memorize it","Try to explain it yourself","Watch TV","Skip it"],ans:1}]},
+  {id:4,  cat:"ai",    diff:3, locked:false, votes:9,  by:"PromptHub", title:"First Principles Breakdown",  desc:"Decompose any topic to its foundational truths.",            prompt:"Break down [topic] using first principles thinking. Start from the most basic assumptions and build up to the conclusion."},
+  {id:5,  cat:"ai",    diff:1, locked:false, votes:15, by:"PromptHub", title:"Rubber Duck Debug",           desc:"Talk through your problem and have AI spot the flaw.",       prompt:"I am going to explain my problem step by step. Listen carefully, then ask one clarifying question before pointing out what might be wrong. Problem: [describe your problem]"},
+  {id:6,  cat:"ai",    diff:2, locked:false, votes:12, by:"PromptHub", title:"Summarize and Quiz Me",       desc:"Turn any content into a summary and a quick self-test.",     prompt:"Read the following text, write a 3-sentence summary, then give me 5 multiple-choice questions to test my understanding. Text: [paste your text here]"},
+  {id:7,  cat:"ai",    diff:1, locked:false, votes:8,  by:"PromptHub", title:"Give Me Three Options",       desc:"Never get stuck on one solution again.",                     prompt:"I need to [describe your goal]. Give me 3 different approaches, with pros and cons for each. Then recommend the best one and explain why."},
+  {id:8,  cat:"ai",    diff:2, locked:false, votes:11, by:"PromptHub", title:"Critique My Work",            desc:"Get honest, structured feedback on anything you create.",    prompt:"Here is something I created: [paste your work]. Critique it honestly. What are the 3 strongest parts and the 3 weakest? What one change would make the biggest difference?"},
+  {id:9,  cat:"ai",    diff:3, locked:false, votes:7,  by:"PromptHub", title:"Steelman My Idea",            desc:"Make the strongest possible case for your idea.",            prompt:"Here is my idea: [describe your idea]. Steelman it - build the strongest possible version of this argument, even stronger than I described it."},
+  {id:10, cat:"ai",    diff:1, locked:false, votes:20, by:"PromptHub", title:"ELI5 Then Go Deeper",         desc:"Learn anything in layers, from simple to expert.",           prompt:"Explain [topic] in three stages: first for a complete beginner, then for someone intermediate, then for an expert. Label each stage clearly."},
+  // CODING
+  {id:11, cat:"coding",diff:2, locked:false, votes:17, by:"PromptHub", title:"Refactor This Function",      desc:"Clean up messy code and learn best practices.",              prompt:"Here is a function I wrote: [paste your code]. Refactor it for readability and performance, and explain every change you made and why."},
+  {id:12, cat:"coding",diff:2, locked:true,  votes:22, by:"PromptHub", title:"Build a Mini CLI Tool",       desc:"A complete coding project challenge.",                       prompt:"Guide me to build a command-line tool in [programming language] that [what it should do]. Give me the structure first, then implement it step by step with explanations.",
+    quiz:[{q:"What does CLI stand for?",opts:["Cool Looking Interface","Command Line Interface","Computer Language Input","Coded List Index"],ans:1},{q:"Which is an example of a coding project?",opts:["Painting a wall","Building a calculator app","Making a sandwich","Riding a bike"],ans:1}]},
+  {id:13, cat:"coding",diff:1, locked:false, votes:19, by:"PromptHub", title:"Find the Bug",                desc:"Practice debugging by spotting errors in snippets.",         prompt:"The following code has a bug. Do not fix it yet - describe what you think is wrong and why, then ask if I would like the solution. Code: [paste your code]"},
+  {id:14, cat:"coding",diff:3, locked:true,  votes:14, by:"PromptHub", title:"Design an API",               desc:"Think through API design before writing a line.",            prompt:"I need to design a REST API for [your project]. Walk me through endpoint structure, naming conventions, status codes, and data shapes before writing any code.",
+    quiz:[{q:"What is an API most like?",opts:["A recipe book","A waiter taking your order to the kitchen","A parking lot","A pencil"],ans:1},{q:"REST API uses which to communicate?",opts:["Bluetooth","WiFi passwords","HTTP requests","USB cables"],ans:2}]},
+  {id:15, cat:"coding",diff:3, locked:false, votes:6,  by:"PromptHub", title:"Code Review Checklist",       desc:"Get a review like a senior developer would.",                prompt:"Review this code like a senior engineer. Check for: readability, edge cases, security issues, performance, and test coverage. Code: [paste your code]"},
+  {id:16, cat:"coding",diff:3, locked:false, votes:5,  by:"PromptHub", title:"Recreate From Scratch",       desc:"Understand internals by rebuilding a familiar feature.",     prompt:"Help me build a simplified version of [feature name] from scratch in [programming language] without using the built-in. Explain the logic as we go."},
+  {id:17, cat:"coding",diff:1, locked:false, votes:16, by:"PromptHub", title:"Explain This Error",          desc:"Understand any error message clearly.",                      prompt:"I got this error: [paste error message]. Explain in simple terms what it means, why it happens, and show me how to fix it with an example."},
+  {id:18, cat:"coding",diff:2, locked:false, votes:13, by:"PromptHub", title:"Write Tests For Me",          desc:"Generate comprehensive tests for your code.",                prompt:"Write unit tests for the following function in [programming language]. Cover happy path, edge cases, and error cases. Code: [paste your code]"},
+  {id:19, cat:"coding",diff:2, locked:false, votes:10, by:"PromptHub", title:"Convert My Code",             desc:"Translate code from one language to another.",               prompt:"Convert the following code from [source language] to [target language]. Keep the same logic and add comments explaining any differences. Code: [paste your code]"},
+  {id:20, cat:"coding",diff:3, locked:false, votes:4,  by:"PromptHub", title:"System Design Interview",     desc:"Prepare for real system design questions.",                  prompt:"Walk me through how I would design [system, e.g. a URL shortener] for a system design interview. Cover: requirements, high-level design, database schema, and scaling considerations."},
+  // STUDY
+  {id:21, cat:"study", diff:2, locked:false, votes:21, by:"PromptHub", title:"Active Recall Session",       desc:"Force retrieval practice on any topic.",                     prompt:"I am studying [topic]. Ask me 10 retrieval practice questions, one at a time. After I answer each, tell me if I am right and fill in what I missed."},
+  {id:22, cat:"study", diff:2, locked:true,  votes:26, by:"PromptHub", title:"Feynman Technique",           desc:"Teach it simply to reveal what you truly understand.",        prompt:"I will explain [topic] in my own words. Point out any gaps, misconceptions, or oversimplifications in my explanation. Ready? Here it is: [your explanation]",
+    quiz:[{q:"Richard Feynman was famous for being a great:",opts:["Chef","Teacher and scientist","Football player","Painter"],ans:1},{q:"You truly understand something when:",opts:["You memorize it","You can explain it simply to anyone","You pass an exam","You read it 10 times"],ans:1}]},
+  {id:23, cat:"study", diff:1, locked:false, votes:18, by:"PromptHub", title:"Make a Study Plan",           desc:"Get a structured, realistic revision schedule.",             prompt:"I have [number of days] to study [subject] for [your goal]. Create a day-by-day study plan with specific focus areas and time estimates per topic."},
+  {id:24, cat:"study", diff:1, locked:false, votes:14, by:"PromptHub", title:"Concept Mind Map",            desc:"Visualise relationships between ideas in a topic.",          prompt:"Create a mind map outline for [topic]. List the central idea, 5 main branches, and 3 sub-branches each. Format it as indented bullet points."},
+  {id:25, cat:"study", diff:1, locked:false, votes:11, by:"PromptHub", title:"Analogies for Abstraction",   desc:"Understand hard concepts through everyday comparisons.",     prompt:"I am struggling to understand [abstract concept]. Give me 3 different analogies from everyday life that make it click, then explain why each works."},
+  {id:26, cat:"study", diff:3, locked:true,  votes:9,  by:"PromptHub", title:"Mock Exam Question",          desc:"Practice with realistic exam-style questions.",              prompt:"Write a [easy or medium or hard] exam question on [topic] as it might appear in [exam type]. Include the marking rubric or model answer after I attempt it.",
+    quiz:[{q:"Best way to prepare for an exam?",opts:["Watch movies all day","Practice with past questions","Sleep for 20 hours","Ignore the subject"],ans:1},{q:"A marking rubric is:",opts:["A type of food","A grading guide that shows what earns marks","A sports trophy","A math formula"],ans:1}]},
+  {id:27, cat:"study", diff:2, locked:false, votes:8,  by:"PromptHub", title:"Debate Both Sides",           desc:"Understand any topic from multiple perspectives.",           prompt:"I am studying [topic or argument]. Present the strongest arguments FOR it, then the strongest arguments AGAINST it. Use evidence and examples for each side."},
+  {id:28, cat:"study", diff:1, locked:false, votes:13, by:"PromptHub", title:"Quiz Me on Vocab",            desc:"Master key terms for any subject fast.",                     prompt:"I am learning [subject]. Give me 10 key vocabulary terms I must know, with a clear definition and one example sentence for each."},
+  // WRITING
+  {id:29, cat:"write", diff:1, locked:false, votes:15, by:"PromptHub", title:"Fix My Writing",              desc:"Improve any piece of writing clearly and quickly.",          prompt:"Fix the grammar, clarity, and flow of the following text. Keep my voice and meaning but make it polished and professional. Text: [paste your text]"},
+  {id:30, cat:"write", diff:2, locked:false, votes:12, by:"PromptHub", title:"Write a Cold Email",          desc:"Craft a compelling cold email for any purpose.",             prompt:"Write a cold email to [recipient type] about [your goal]. Make it short (under 150 words), personable, and end with a clear call to action. My name is [your name]."},
+  {id:31, cat:"write", diff:1, locked:false, votes:9,  by:"PromptHub", title:"Rewrite More Simply",         desc:"Make any text clearer and easier to read.",                  prompt:"Rewrite the following text at a [grade level, e.g. 8th grade] reading level. Keep all the key information but use simpler words and shorter sentences. Text: [paste your text]"},
+  {id:32, cat:"write", diff:2, locked:false, votes:7,  by:"PromptHub", title:"Outline My Essay",            desc:"Get a full essay structure before you start writing.",       prompt:"I need to write a [length, e.g. 1000-word] essay on [topic] for [audience]. Create a detailed outline with introduction, main arguments, supporting points, and conclusion."},
+  {id:33, cat:"write", diff:3, locked:false, votes:6,  by:"PromptHub", title:"Persuasive Argument Builder", desc:"Build a watertight persuasive case for any position.",       prompt:"I need to argue that [your position]. Build me a persuasive argument using the PEEL structure (Point, Evidence, Explanation, Link). Include 3 strong points and pre-empt the main counter-argument."},
+  {id:34, cat:"write", diff:1, locked:false, votes:11, by:"PromptHub", title:"Write My Bio",                desc:"Create a professional bio in seconds.",                     prompt:"Write a [short/medium/long] professional bio for me. Here are the key facts: [your name, role, achievements, and anything else relevant]. Make it sound confident but not arrogant."},
+  {id:35, cat:"write", diff:2, locked:false, votes:8,  by:"PromptHub", title:"Generate Headlines",          desc:"Create attention-grabbing headlines for any content.",       prompt:"Generate 10 headline options for a [type of content] about [topic]. Make them varied: some curious, some bold, some emotional. Target audience: [describe audience]."},
+  {id:36, cat:"write", diff:2, locked:false, votes:5,  by:"PromptHub", title:"Meeting Agenda Writer",       desc:"Plan any meeting professionally in seconds.",               prompt:"Write a professional agenda for a [meeting type] meeting about [topic]. Include: objective, time slots for each item, who leads each section, and a clear action items section. Duration: [length]."},
+  {id:37, cat:"write", diff:3, locked:false, votes:4,  by:"PromptHub", title:"Story Plot Generator",        desc:"Build compelling story ideas with real structure.",          prompt:"Generate a detailed story plot for a [genre] story. Include: protagonist with a clear flaw, inciting incident, three rising action events, climax, and resolution. Theme: [your theme]."},
+  {id:38, cat:"write", diff:1, locked:false, votes:16, by:"PromptHub", title:"Turn Notes Into Draft",       desc:"Convert messy notes into a polished first draft.",           prompt:"I have some rough notes on [topic]. Turn them into a clear, well-structured first draft. My notes: [paste your notes]"}
+];
+
+var userPrompts = [];
+var bookmarks = [], unlocked = {}, votedIds = {}, currentCat = "all", currentSearch = "", activePrompt = null, currentTab = "browse";
+var quizId = null, quizQs = [], quizIdx = 0, quizAnswered = false;
+var nextId = 100;
+
+function allPrompts(){ return BASE.concat(userPrompts); }
+function cname(c){return {ai:"AI",coding:"Coding",study:"Study",write:"Writing"}[c]||c;}
+function mkDots(n){var s="<div class='diff-dots'>";for(var i=1;i<=3;i++)s+="<div class='diff-dot"+(i<=n?" on":"")+"'></div>";return s+"</div>";}
+function dname(n){return ["","Beginner","Intermediate","Advanced"][n];}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function getBrackets(t){var f=[],r=/\[([^\]]+)\]/g,m;while((m=r.exec(t))!==null){var l=m[1],a=false;for(var i=0;i<f.length;i++){if(f[i]===l){a=true;break;}}if(!a)f.push(l);}return f;}
+function buildPreview(t,v){var r=/\[([^\]]+)\]/g,s="",l=0,m;while((m=r.exec(t))!==null){s+=esc(t.slice(l,m.index));var val=v[m[1]]||"";s+=val?"<span class='filled'>"+esc(val)+"</span>":"<span class='unfilled'>["+esc(m[1])+"]</span>";l=m.index+m[0].length;}return s+esc(t.slice(l));}
+function buildFilled(t,v){return t.replace(/\[([^\]]+)\]/g,function(m,l){return v[l]||m;});}
+function renderPrev(t){var r=/\[([^\]]+)\]/g,s="",l=0,m;while((m=r.exec(t))!==null){s+=esc(t.slice(l,m.index));s+="<span class='blank'>"+esc(m[1])+"</span>";l=m.index+m[0].length;}return s+esc(t.slice(l));}
+
+// STATS
+function updateStats(){
+  var all=allPrompts();
+  var totalVotes=0; for(var i=0;i<all.length;i++)totalVotes+=all[i].votes;
+  document.getElementById("stat-total").textContent=all.length;
+  document.getElementById("stat-votes").textContent=totalVotes;
+  document.getElementById("stat-users").textContent=userPrompts.length;
+  document.getElementById("footer-count").textContent=all.length;
+}
+
+// DARK MODE
+var isDark = false;
+function toggleDark(){
+  isDark=!isDark;
+  document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
+  document.getElementById("dark-btn").textContent=isDark?"&#9728;&#65039;":"&#127763;";
+}
+
+// SURPRISE
+function closeSurprise(){document.getElementById("surprise").classList.add("gone");launchConfetti();}
+
+// CONFETTI
+function launchConfetti(){
+  var colors=["#FFF176","#2D6A4F","#1A3A5C","#6B3FA0","#F9C922","#FF6B6B","#4ECDC4","#E57373"];
+  for(var i=0;i<70;i++){
+    (function(i){setTimeout(function(){
+      var el=document.createElement("div");el.className="confetti-piece";
+      el.style.left=Math.random()*100+"vw";el.style.background=colors[Math.floor(Math.random()*colors.length)];
+      el.style.width=(5+Math.random()*8)+"px";el.style.height=(5+Math.random()*8)+"px";
+      el.style.borderRadius=Math.random()>.5?"50%":"2px";el.style.animationDuration=(1.5+Math.random()*2)+"s";
+      document.body.appendChild(el);setTimeout(function(){el.remove();},3500);
+    },i*25);})(i);
+  }
+}
+
+// TABS
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById("tab-browse").style.display=tab==="browse"?"block":"none";
+  document.getElementById("tab-leaderboard").style.display=tab==="leaderboard"?"block":"none";
+  document.getElementById("tab-submit").style.display=tab==="submit"?"block":"none";
+  if(tab==="leaderboard")renderLeaderboard();
+  // sync mobile nav
+  var btns=["browse","leaderboard","submit"];
+  for(var i=0;i<btns.length;i++){
+    var el=document.getElementById("mnav-"+btns[i]);
+    if(el)el.classList.toggle("active",btns[i]===tab);
+  }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function mnavSwitch(tab){switchTab(tab);}
+
+// SEARCH
+function sFocus(on){document.getElementById("search-bar").classList.toggle("focused",on);}
+function onSearch(){currentSearch=document.getElementById("search-input").value.toLowerCase().trim();var tags=document.querySelectorAll(".stag");for(var i=0;i<tags.length;i++)tags[i].classList.remove("active");renderGrid(currentCat);}
+function tagSearch(term,el){var tags=document.querySelectorAll(".stag");for(var i=0;i<tags.length;i++)tags[i].classList.remove("active");if(currentSearch===term){currentSearch="";document.getElementById("search-input").value="";}else{el.classList.add("active");currentSearch=term;document.getElementById("search-input").value=term;}renderGrid(currentCat);}
+function searchKey(e){if(e.key==="Escape"){currentSearch="";document.getElementById("search-input").value="";renderGrid(currentCat);}}
+function matchesSearch(p,t){
+  if(!t)return true;
+  if(t==="locked")return p.locked&&!unlocked[p.id];
+  if(t==="beginner")return p.diff===1;
+  if(t==="intermediate")return p.diff===2;
+  if(t==="advanced")return p.diff===3;
+  if(t==="top")return p.votes>=15;
+  return p.title.toLowerCase().indexOf(t)!==-1||p.desc.toLowerCase().indexOf(t)!==-1||p.prompt.toLowerCase().indexOf(t)!==-1||p.cat.toLowerCase().indexOf(t)!==-1;
+}
+
+// RENDER GRID
+function doFilter(cat,btn){var pills=document.querySelectorAll(".pill");for(var i=0;i<pills.length;i++)pills[i].classList.remove("active");btn.classList.add("active");renderGrid(cat);}
+function renderGrid(cat){
+  currentCat=cat;
+  var all=allPrompts();
+  var list=all.filter(function(p){return(cat==="all"||p.cat===cat)&&matchesSearch(p,currentSearch);});
+  if(currentSearch==="top")list.sort(function(a,b){return b.votes-a.votes;});
+  var labels={all:"All prompts",ai:"AI Prompts",coding:"Coding",study:"Study",write:"Writing"};
+  document.getElementById("sec-label").textContent=(currentSearch?"Search results":labels[cat])+" -- "+list.length+" total";
+  var ce=document.getElementById("s-count");ce.textContent=currentSearch?list.length+" prompt"+(list.length!==1?"s":"")+" found":"";
+  var g=document.getElementById("grid");
+  if(list.length===0){g.innerHTML="<div class='no-results'><div style='font-size:2rem;margin-bottom:.75rem'>&#128269;</div><p>No prompts found for <strong>\""+esc(currentSearch)+"\"</strong></p></div>";return;}
+  g.innerHTML="";var frag=document.createDocumentFragment();
+  for(var i=0;i<list.length;i++){
+    (function(p,idx){
+      var isLocked=p.locked&&!unlocked[p.id];
+      var saved=bookmarks.indexOf(p.id)!==-1;
+      var voted=!!votedIds[p.id];
+      var isUser=p.by&&p.by!=="PromptHub";
+      var el=document.createElement("div");el.className="card"+(isLocked?" locked":"");el.style.animationDelay=(idx*30)+"ms";
+      var topTag=isLocked?"<span class='tag locked-tag'><span class='tag-dot'></span>&#128274; Locked</span>"
+        :(p.locked&&unlocked[p.id]?"<span class='tag "+p.cat+"'><span class='tag-dot'></span>"+cname(p.cat)+"</span><span class='unlocked-badge'>&#10003; Unlocked</span>"
+        :"<span class='tag "+p.cat+"'><span class='tag-dot'></span>"+cname(p.cat)+"</span>"+(isUser?"<span class='user-badge'>&#128100; "+esc(p.by)+"</span>":""));
+      var contentHtml=isLocked?"<div class='locked-overlay'><div class='lock-icon'>&#128274;</div><p>Prompt locked</p><small>Answer 2 easy questions to unlock!</small></div>":"<div class='prompt-preview'>"+renderPrev(p.prompt)+"</div>";
+      var actionHtml=isLocked?"<button class='quiz-btn' onclick='openQuiz("+p.id+")'><svg fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>Take Quiz to Unlock</button>"
+        :"<button class='fill-btn' onclick='openModal("+p.id+")'><svg fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>Fill in &amp; Copy</button>";
+      el.innerHTML=
+        "<div class='card-top'><div style='display:flex;align-items:center;gap:5px;flex-wrap:wrap'>"+topTag+"</div>"+
+        "<div class='card-actions'>"+
+          "<button class='vote-btn"+(voted?" voted":"")+"' id='vbtn"+p.id+"' onclick='votePrompt("+p.id+")'>"+
+            "<svg fill='"+(voted?"currentColor":"none")+"' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path d='M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z'/><path d='M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3'/></svg>"+
+            "<span id='vc"+p.id+"'>"+p.votes+"</span>"+
+          "</button>"+
+          "<button class='bm-icon"+(saved?" saved":"")+"' id='bm"+p.id+"' onclick='toggleBM("+p.id+")'>"+
+            "<svg fill='"+(saved?"currentColor":"none")+"' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path d='M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'/></svg>"+
+          "</button>"+
+        "</div></div>"+
+        "<h3>"+esc(p.title)+"</h3><p>"+esc(p.desc)+"</p>"+contentHtml+actionHtml+
+        "<div class='diff'>"+mkDots(p.diff)+"<span>"+dname(p.diff)+"</span></div>";
+      frag.appendChild(el);
+    })(list[i],i);
+  }
+  var gridEl=document.createElement("div");gridEl.className="grid";gridEl.appendChild(frag);g.appendChild(gridEl);
+}
+
+// VOTE
+function votePrompt(id){
+  var all=allPrompts();
+  for(var i=0;i<all.length;i++){
+    if(all[i].id===id){
+      if(votedIds[id]){all[i].votes--;delete votedIds[id];}
+      else{all[i].votes++;votedIds[id]=true;}
+      var vc=document.getElementById("vc"+id);if(vc)vc.textContent=all[i].votes;
+      var vbtn=document.getElementById("vbtn"+id);
+      if(vbtn){
+        vbtn.classList.toggle("voted",!!votedIds[id]);
+        var svg=vbtn.querySelector("svg");if(svg)svg.setAttribute("fill",votedIds[id]?"currentColor":"none");
+      }
+      updateStats();break;
+    }
+  }
+}
+
+// LEADERBOARD
+function renderLeaderboard(){
+  var all=allPrompts().slice().sort(function(a,b){return b.votes-a.votes;});
+  var top=all.slice(0,15);
+  var html="";
+  var medals=["&#127947;","&#129352;","&#129353;"];
+  for(var i=0;i<top.length;i++){
+    var p=top[i];var voted=!!votedIds[p.id];
+    var rankClass=i===0?"r1":i===1?"r2":i===2?"r3":"rn";
+    var rankDisp=i<3?medals[i]:"#"+(i+1);
+    html+="<div class='lb-card' style='animation-delay:"+(i*40)+"ms'>"+
+      "<div class='lb-rank "+rankClass+"'>"+rankDisp+"</div>"+
+      "<div class='lb-info'>"+
+        "<div class='lb-name'>"+esc(p.title)+"</div>"+
+        "<div class='lb-meta'>"+
+          "<span class='lb-cat tag "+p.cat+"'><span class='tag-dot'></span>"+cname(p.cat)+"</span>"+
+          "<span>"+dname(p.diff)+"</span>"+
+          (p.by&&p.by!=="PromptHub"?"<span>by "+esc(p.by)+"</span>":"")+
+        "</div>"+
+      "</div>"+
+      "<div style='display:flex;align-items:center;gap:.75rem'>"+
+        "<div class='lb-votes'>&#128077; "+p.votes+"</div>"+
+        "<button class='lb-vote-btn"+(voted?" voted":"")+"' id='lbv"+p.id+"' onclick='lbVote("+p.id+")'>"+
+          (voted?"&#10003; Voted":"&#43; Vote")+
+        "</button>"+
+      "</div>"+
+    "</div>";
+  }
+  document.getElementById("lb-list").innerHTML=html;
+}
+function lbVote(id){votePrompt(id);renderLeaderboard();}
+
+// SUBMIT
+function updateCharCount(){var v=document.getElementById("sub-prompt").value;document.getElementById("char-count").textContent=v.length;}
+function submitPrompt(){
+  var name=document.getElementById("sub-name").value.trim();
+  var title=document.getElementById("sub-title").value.trim();
+  var cat=document.getElementById("sub-cat").value;
+  var diff=parseInt(document.getElementById("sub-diff").value);
+  var desc=document.getElementById("sub-desc").value.trim();
+  var prompt=document.getElementById("sub-prompt").value.trim();
+  if(!title||!prompt||!desc){alert("Please fill in all fields!");return;}
+  if(prompt.length<20){alert("Prompt is too short! Write at least 20 characters.");return;}
+  var newP={id:nextId++,cat:cat,diff:diff,locked:false,votes:0,by:name||"Anonymous",title:title,desc:desc,prompt:prompt};
+  userPrompts.push(newP);updateStats();
+  document.getElementById("submit-form-wrap").style.display="none";
+  document.getElementById("submit-success").classList.add("show");
+  launchConfetti();
+}
+function submitAnother(){
+  document.getElementById("sub-name").value="";document.getElementById("sub-title").value="";
+  document.getElementById("sub-desc").value="";document.getElementById("sub-prompt").value="";
+  document.getElementById("char-count").textContent="0";
+  document.getElementById("submit-form-wrap").style.display="block";
+  document.getElementById("submit-success").classList.remove("show");
+}
+
+// FILL MODAL
+function openModal(id){
+  var all=allPrompts();var p=null;for(var i=0;i<all.length;i++){if(all[i].id===id){p=all[i];break;}}if(!p)return;
+  activePrompt=p;document.getElementById("modal-title").textContent=p.title;
+  var brackets=getBrackets(p.prompt);var fe=document.getElementById("modal-fields");fe.innerHTML="";
+  if(brackets.length===0){fe.innerHTML="<p style='font-size:.82rem;color:var(--muted);margin-bottom:.85rem'>No blanks in this prompt. Click copy!</p>";document.getElementById("modal-preview").textContent=p.prompt;}
+  else{for(var i=0;i<brackets.length;i++){var lbl=brackets[i],safe=lbl.replace(/[^a-zA-Z0-9]/g,"_");var div=document.createElement("div");div.className="field";div.innerHTML="<label>"+esc(lbl)+"</label><input type='text' id='field-"+safe+"' data-label='"+esc(lbl)+"' placeholder='"+esc(lbl)+"...' oninput='updatePreview()'/>";fe.appendChild(div);}updatePreview();}
+  var btn=document.getElementById("modal-copy-btn");btn.textContent="Copy prompt";btn.classList.remove("done");
+  document.getElementById("modal-wrap").classList.add("open");var first=fe.querySelector("input");if(first)setTimeout(function(){first.focus();},100);
+}
+function getValues(){var ins=document.getElementById("modal-fields").querySelectorAll("input"),v={};for(var i=0;i<ins.length;i++)v[ins[i].getAttribute("data-label")]=ins[i].value.trim();return v;}
+function updatePreview(){if(!activePrompt)return;document.getElementById("modal-preview").innerHTML=buildPreview(activePrompt.prompt,getValues());}
+function modalCopy(){
+  if(!activePrompt)return;var text=buildFilled(activePrompt.prompt,getValues());var btn=document.getElementById("modal-copy-btn");
+  function done(){btn.textContent="Copied!";btn.classList.add("done");setTimeout(function(){closeModal();},900);}
+  if(navigator.clipboard&&location.protocol!=="file:"){navigator.clipboard.writeText(text).then(done).catch(function(){fbCopy(text,done);});}else{fbCopy(text,done);}
+}
+function fbCopy(text,cb){var ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;left:-9999px;top:0;opacity:0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");cb();}catch(e){alert("Copy:\n\n"+text);}document.body.removeChild(ta);}
+function closeModal(){document.getElementById("modal-wrap").classList.remove("open");activePrompt=null;}
+
+// QUIZ
+function openQuiz(id){
+  var all=allPrompts();var p=null;for(var i=0;i<all.length;i++){if(all[i].id===id){p=all[i];break;}}if(!p||!p.quiz)return;
+  quizId=id;quizQs=p.quiz;quizIdx=0;quizAnswered=false;
+  document.getElementById("quiz-ctitle").textContent="Unlock: "+p.title;
+  document.getElementById("quiz-game").style.display="block";document.getElementById("quiz-win").classList.remove("show");
+  loadQ();document.getElementById("quiz-wrap").classList.add("open");
+}
+function loadQ(){
+  quizAnswered=false;var q=quizQs[quizIdx];
+  document.getElementById("quiz-prog").textContent=(quizIdx+1)+" / "+quizQs.length;
+  document.getElementById("quiz-q").textContent=q.q;
+  var fb=document.getElementById("quiz-fb");fb.className="quiz-fb";fb.textContent="";
+  var nxt=document.getElementById("quiz-next");nxt.className="quiz-next";nxt.textContent=quizIdx<quizQs.length-1?"Next question \u2192":"See result!";
+  var optsEl=document.getElementById("quiz-opts");optsEl.innerHTML="";
+  for(var i=0;i<q.opts.length;i++){(function(idx){var btn=document.createElement("button");btn.className="quiz-opt";btn.textContent=q.opts[idx];btn.onclick=function(){if(!quizAnswered)answerQ(idx);};optsEl.appendChild(btn);})(i);}
+}
+function answerQ(chosen){
+  quizAnswered=true;var q=quizQs[quizIdx];var opts=document.querySelectorAll(".quiz-opt");var fb=document.getElementById("quiz-fb");
+  for(var i=0;i<opts.length;i++)opts[i].disabled=true;
+  if(chosen===q.ans){opts[chosen].classList.add("correct");fb.textContent="Correct! Well done!";fb.className="quiz-fb show ok";}
+  else{opts[chosen].classList.add("wrong");opts[q.ans].classList.add("correct");fb.textContent="Oops! Correct answer is highlighted.";fb.className="quiz-fb show bad";}
+  document.getElementById("quiz-next").classList.add("show");
+}
+function nextQ(){quizIdx++;if(quizIdx>=quizQs.length){document.getElementById("quiz-game").style.display="none";document.getElementById("quiz-win").classList.add("show");document.getElementById("win-sub").textContent="You answered all questions! Prompt is now unlocked.";}else{loadQ();}}
+function onWin(){unlocked[quizId]=true;closeQuiz();renderGrid(currentCat);setTimeout(function(){openModal(quizId);},350);launchConfetti();}
+function closeQuiz(){document.getElementById("quiz-wrap").classList.remove("open");}
+
+// BOOKMARKS
+function toggleBM(id){var idx=bookmarks.indexOf(id);if(idx!==-1){bookmarks.splice(idx,1);}else{bookmarks.push(id);}document.getElementById("bm-count").textContent=bookmarks.length;renderGrid(currentCat);if(document.getElementById("panel").classList.contains("open"))renderPanel();}
+function renderPanel(){
+  var body=document.getElementById("panel-body");var all=allPrompts();
+  if(bookmarks.length===0){body.innerHTML="<div class='empty'><div class='empty-icon'>&#128278;</div><p>No saved prompts yet.</p></div>";return;}
+  var html="";for(var i=0;i<all.length;i++){if(bookmarks.indexOf(all[i].id)!==-1){html+="<div class='saved-card'><span class='tag "+all[i].cat+"' style='width:fit-content'><span class='tag-dot'></span>"+cname(all[i].cat)+"</span><h4>"+esc(all[i].title)+"</h4><p>"+esc(all[i].prompt)+"</p></div>";}}
+  body.innerHTML=html;
+}
+function togglePanel(){var panel=document.getElementById("panel"),overlay=document.getElementById("overlay");var isOpen=panel.classList.toggle("open");overlay.classList.toggle("open",isOpen);if(isOpen)renderPanel();}
+
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){closeModal();closeQuiz();}
+  if(e.key==="/"&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA"&&document.activeElement.tagName!=="SELECT"){e.preventDefault();document.getElementById("search-input").focus();switchTab("browse");}
+});
+
+// Bulletproof init — works on file://, netlify, github pages, everywhere
+function init(){
+  try{renderGrid("all");}catch(e){}
+  try{updateStats();}catch(e){}
+}
+
+// Try all possible load triggers so it ALWAYS works
+if(document.readyState==="complete"||document.readyState==="interactive"){
+  setTimeout(init,1);
+} else {
+  document.addEventListener("DOMContentLoaded",init);
+  window.addEventListener("load",init);
+}
+
+</script>
+</body>
+</html>
